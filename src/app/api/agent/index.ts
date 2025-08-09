@@ -4,7 +4,7 @@ import { runAgent } from "../../../lib/agent/utils";
 import { SEARCH_AGENT_SYSTEM_PROMPT } from "../../../lib/prompts";
 import { createWebSearchTool, createLogResultTool } from "../../../lib/tools";
 
-const llm = new ChatOpenAI({ model: 'gpt-4o', temperature: 0 });
+const llm = new ChatOpenAI({ model: 'gpt-4o' });
 
 export async function runSearchAgent(threadId?: string) {
     const tools = [createWebSearchTool(), createLogResultTool()];

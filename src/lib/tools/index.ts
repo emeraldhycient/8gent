@@ -23,11 +23,15 @@ export function createLogResultTool() {
 			})).min(1)
 		}),
 		func: async ({ results }) => {
+			const isLikelyPostingUrl = (u: string) => /job|jobs|position|positions|opportun|careers|greenhouse|lever|workday|smartrecruiters|ashby|boards|apply/i.test(u) && !/\b(careers|jobs)\/?$/i.test(new URL(u).pathname);
+			const filtered = results.filter(r => {
+				try { return isLikelyPostingUrl(r.url); } catch { return false; }
+			});
 			let inserted = 0;
-			for (const r of results) {
+			for (const r of filtered) {
 				try { await upsertLink(r.url, 'agent_seed', 0); inserted++; } catch {}
 			}
-			return `Logged ${results.length} jobs (seeded ${inserted}).`;
+			return `Received ${results.length} results; accepted ${filtered.length} likely postings (seeded ${inserted}).`;
 		}
 	});
 }

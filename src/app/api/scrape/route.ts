@@ -8,7 +8,7 @@ import { fetchHtml, extractJobStructured, summarizeDescription, discoverLinks, l
 const BodySchema = z.object({
   urls: z.array(z.string().url()).min(1, "At least one URL required"),
   maxDepth: z.number().int().min(0).max(3).default(1),
-  limit: z.number().int().min(1).max(200).default(50),
+  limit: z.number().int().min(1).max(200).default(Infinity),
   summarize: z.boolean().optional().default(true),
 });
 
