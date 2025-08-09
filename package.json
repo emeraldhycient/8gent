@@ -15,14 +15,16 @@
     "@langchain/langgraph": "^0.4.3",
     "@langchain/ollama": "^0.2.3",
     "@langchain/openai": "^0.6.7",
-  "@langchain/tavily": "^0.1.5",
-  "cheerio": "^1.1.2",
-  "langchain": "^0.3.30",
-  "langchainhub": "^0.0.11",
-  "sqlite3": "^5.1.7",
+    "@langchain/tavily": "^0.1.5",
+    "@radix-ui/react-slot": "^1.2.3",
+    "cheerio": "^1.1.2",
+    "class-variance-authority": "^0.7.1",
+    "langchain": "^0.3.30",
+    "langchainhub": "^0.0.11",
     "next": "15.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "sqlite3": "^5.1.7",
     "zod": "^4.0.16"
   },
   "devDependencies": {
@@ -31,11 +33,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sqlite3": "^3.1.11",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "tailwindcss": "^4",
-  "typescript": "^5",
-  "@types/sqlite3": "^3.1.11"
+    "typescript": "^5"
   },
   "packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321"
 }
