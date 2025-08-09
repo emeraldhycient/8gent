@@ -1,4 +1,4 @@
-import { runAgent } from "./index";
+import { runAgent } from "./index"; // still exported for backward compatibility
 import { AIMessage } from "@langchain/core/messages";
 import { randomUUID } from "crypto";
 
