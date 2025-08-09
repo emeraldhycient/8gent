@@ -2,7 +2,7 @@ import { z } from "zod";
 import * as cheerio from "cheerio";
 import { upsertLink, markCrawled, getUncrawledBatch, upsertJob } from "../../../lib/db";
 import { ChatOpenAI } from "@langchain/openai";
-import { fetchHtml, extractJobStructured, summarizeDescription, discoverLinks } from "../../../lib/scrape/utils";
+import { fetchHtml, extractJobStructured, summarizeDescription, discoverLinks, llmFilterLinks } from "../../../lib/scrape/utils";
 
 // Schema for incoming POST body
 const BodySchema = z.object({
@@ -37,7 +37,12 @@ async function scrapeOne(url: string, currentDepth: number, maxDepth: number, do
     const $ = cheerio.load(html);
   const job = await extractJobStructured(summarizer, url, html);
     const canDiscover = currentDepth < maxDepth;
-    const discovered = canDiscover ? discoverLinks($, new URL(url)) : [];
+    let discovered: string[] = [];
+    if (canDiscover) {
+      const raw = discoverLinks($, new URL(url), 25);
+      // LLM filtering for job-relevant links
+      discovered = await llmFilterLinks(summarizer, url, raw);
+    }
     // persist job (summary later)
     let summary: string | null = null;
     if (doSummarize) {

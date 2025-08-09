@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import { ChatOpenAI } from '@langchain/openai';
-import { JOB_EXTRACTION_SYSTEM, buildJobExtractionUserPrompt } from '../prompts';
+import { JOB_EXTRACTION_SYSTEM, buildJobExtractionUserPrompt, LINK_DISCOVERY_SYSTEM, buildLinkDiscoveryUserPrompt } from '../prompts';
 
 export const DEFAULT_UA = 'Mozilla/5.0 (AgentScraperUtils)';
 
@@ -28,6 +28,36 @@ export function discoverLinks($: cheerio.CheerioAPI, base: URL, cap = 10): strin
     } catch {}
   });
   return Array.from(out).slice(0, cap);
+}
+
+// LLM-driven filtering/prioritization of candidate links.
+export async function llmFilterLinks(model: ChatOpenAI, baseUrl: string, rawLinks: string[]): Promise<string[]> {
+  if (!rawLinks.length) return [];
+  const base = new URL(baseUrl);
+  // Build candidate objects with simple anchor/context placeholders (could be enriched upstream)
+  const candidates = rawLinks.map(u => ({ url: u, anchor: u.split('/').slice(-1)[0].replace(/[-_]/g, ' ') }));
+  try {
+    const resp: any = await model.invoke([
+      { role: 'system', content: LINK_DISCOVERY_SYSTEM },
+      { role: 'user', content: buildLinkDiscoveryUserPrompt({ base: base.href, links: candidates }) }
+    ] as any);
+    let txt = '';
+    if (Array.isArray(resp.content)) {
+      const first = resp.content.find((c: any) => typeof c.text === 'string');
+      txt = first ? first.text : JSON.stringify(resp.content);
+    } else if (typeof resp.content === 'string') txt = resp.content; else txt = JSON.stringify(resp.content);
+    const s = txt.indexOf('{');
+    const e = txt.lastIndexOf('}');
+    if (s === -1 || e === -1) throw new Error('no json');
+    const parsed = JSON.parse(txt.slice(s, e + 1));
+    if (Array.isArray(parsed.urls)) {
+      return parsed.urls.filter((u: any) => typeof u === 'string').slice(0, 20);
+    }
+    return [];
+  } catch {
+    // fallback: heuristic subset
+    return rawLinks.filter(l => /job|career|position|greenhouse|lever|opportun/i.test(l)).slice(0, 15);
+  }
 }
 
 export function isLikelyJobPosting(url: string, job: { title: string | null; description: string | null }): boolean {
@@ -82,7 +112,7 @@ export async function extractJobStructured(model: ChatOpenAI, url: string, html:
 export async function summarizeDescription(model: ChatOpenAI, desc: string | null, summarize: boolean) {
   if (!desc || !summarize) return null;
   try {
-    const r: any = await model.invoke(`Summarize job description in 3 concise bullet points:\n${desc.slice(0, 6000)}`);
+    const r: any = await model.invoke(`Summarize job description in concise bullet points:\n${desc.slice(0, 6000)}`);
     return typeof r.content === 'string' ? r.content : JSON.stringify(r.content);
   } catch { return null; }
 }

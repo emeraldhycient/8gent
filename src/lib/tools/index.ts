@@ -4,7 +4,7 @@ import { z } from "zod";
 import { upsertLink, upsertJob, markCrawled, getUncrawledBatch } from "../db";
 import { ChatOpenAI } from "@langchain/openai";
 import * as cheerio from 'cheerio';
-import { fetchHtml, extractJobStructured, summarizeDescription, discoverLinks } from "../scrape/utils";
+import { fetchHtml, extractJobStructured, summarizeDescription, discoverLinks, llmFilterLinks } from "../scrape/utils";
 
 // Web search tool (Tavily)
 export function createWebSearchTool() {
@@ -56,7 +56,11 @@ export function createScrapeJobsTool(model = new ChatOpenAI({ model: 'gpt-4o', t
 						const $ = cheerio.load(html);
 						const job = await extractJobStructured(model, url, html);
 						const canDiscover = depth < maxDepth;
-						const discovered = canDiscover ? discoverLinks($, new URL(url)) : [];
+									let discovered: string[] = [];
+									if (canDiscover) {
+										const raw = discoverLinks($, new URL(url), 25);
+										discovered = await llmFilterLinks(model, url, raw);
+									}
 						const summary = await summarizeDescription(model, job.description, summarize);
 						await upsertJob({ title: job.title, url, company: job.company, location: job.location, description: job.description, summary, metadata: job.metadata });
 						await markCrawled(url);
