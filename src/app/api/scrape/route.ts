@@ -133,15 +133,15 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const maxDepth = parseInt(url.searchParams.get('maxDepth') || '1', 10);
-    const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+    const maxDepth = parseInt(url.searchParams.get('maxDepth') || "1000", 10);
+    const limit = parseInt(url.searchParams.get('limit') || '1000', 10);
     const summarizeParam = url.searchParams.get('summarize');
     const summarize = summarizeParam == null ? true : /^(1|true|yes)$/i.test(summarizeParam);
 
-    if (isNaN(maxDepth) || maxDepth < 0 || maxDepth > 3) {
+    if (isNaN(maxDepth) || maxDepth < 0 || maxDepth > 1000) {
       return new Response(JSON.stringify({ error: 'Invalid maxDepth' }), { status: 400 });
     }
-    if (isNaN(limit) || limit < 1 || limit > 500) {
+    if (isNaN(limit) || limit < 1 || limit > 1000) {
       return new Response(JSON.stringify({ error: 'Invalid limit' }), { status: 400 });
     }
 
