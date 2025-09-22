@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  name        String?
+  workprofile Workprofile?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// for storing cv, education, skills, experience and cv image
+model Workprofile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  education   String?
+  skills      String?
+  experience  String?
+  cvImage     String?
+  cvEmbedding String?
+  cvOCR       String?
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CrawlSeed {
+  id        Int      @id @default(autoincrement())
+  parentUrl String?
+  title     String
+  url       String   @unique
+  joblistings Joblistings[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Joblistings{
+  id             Int      @id @default(autoincrement())
+  crawlSeedId    Int
+  title          String
+  company        String?
+  location       String?
+  description    String?
+  url            String   @unique
+  salaryMin     String?
+  salaryMax     String?
+  currency       String?
+  employmentType String?
+  experienceLevel String?
+  industry       String?
+  function       String?
+  seniority      String?
+  summary       String?
+  metaData       String?
+  postingDate    DateTime?
+  applicationUrl String?
+  embedding      String?
+  crawlSeed      CrawlSeed @relation(fields: [crawlSeedId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
