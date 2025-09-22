@@ -19,6 +19,7 @@ model User {
   email       String       @unique
   name        String?
   workprofile Workprofile?
+  applications JobApplication[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -36,40 +37,70 @@ model Workprofile {
   user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  JobApplication JobApplication[]
+}
+
+model Company {
+  id          Int           @id @default(autoincrement())
+  name        String
+  website     String?
+  description String?
+  logo        String?
+  joblistings Joblistings[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model CrawlSeed {
-  id        Int      @id @default(autoincrement())
-  parentUrl String?
-  title     String
-  url       String   @unique
+  id          Int           @id @default(autoincrement())
+  parentUrl   String?
+  title       String
+  url         String        @unique
   joblistings Joblistings[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
-model Joblistings{
-  id             Int      @id @default(autoincrement())
-  crawlSeedId    Int
-  title          String
-  company        String?
-  location       String?
-  description    String?
-  url            String   @unique
-  salaryMin     String?
-  salaryMax     String?
-  currency       String?
-  employmentType String?
+model Joblistings {
+  id              Int       @id @default(autoincrement())
+  crawlSeedId     Int
+  title           String
+  company         String?
+  location        String?
+  description     String?
+  url             String    @unique
+  salaryMin       String?
+  salaryMax       String?
+  currency        String?
+  employmentType  String?
   experienceLevel String?
-  industry       String?
-  function       String?
-  seniority      String?
-  summary       String?
-  metaData       String?
-  postingDate    DateTime?
-  applicationUrl String?
-  embedding      String?
-  crawlSeed      CrawlSeed @relation(fields: [crawlSeedId], references: [id])
-  createdAt      DateTime  @default(now())
+  industry        String?
+  function        String?
+  seniority       String?
+  summary         String?
+  metaData        String?
+  postingDate     DateTime?
+  applicationUrl  String?
+  embedding       String?
+  crawlSeed       CrawlSeed @relation(fields: [crawlSeedId], references: [id])
+  companyId       Int?
+  companyInternal Company?  @relation(fields: [companyId], references: [id])
+  applications    JobApplication[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+
+model JobApplication {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  joblistingId   Int
+  status         String    @default("applied") // e.g., applied, interviewing, offered, rejected
+  appliedAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id])
+  joblisting     Joblistings @relation(fields: [joblistingId], references: [id])
+  workprofileId  Int?
+  workprofile    Workprofile? @relation(fields: [workprofileId], references: [id])
 }
