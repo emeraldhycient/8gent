@@ -22,6 +22,8 @@ model User {
   applications JobApplication[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
+
+  Meetings Meetings[]
 }
 
 // for storing cv, education, skills, experience and cv image
@@ -51,6 +53,8 @@ model Company {
   companyUsers companyUser[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  Meetings Meetings[]
 }
 
 model companyUser {
@@ -127,4 +131,30 @@ model JobApplication {
   joblisting    Joblistings  @relation(fields: [joblistingId], references: [id])
   workprofileId Int?
   workprofile   Workprofile? @relation(fields: [workprofileId], references: [id])
+}
+
+model Meetings {
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  title        String
+  description  String?
+  meetingType  MeetingType?
+  startTime    DateTime
+  endTime      DateTime
+  interviewer  String?
+  meetingRound String?
+  note         String?
+  location     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  companyId    Int?
+  company      Company?     @relation(fields: [companyId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+}
+
+enum MeetingType {
+  IN_PERSON
+  VIRTUAL
+  TECHNICAL
+  PHONE
 }
